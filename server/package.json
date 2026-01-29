@@ -1,0 +1,17 @@
+{
+  "name": "mushroom-rush-server",
+  "version": "1.0.0",
+  "description": "Real-time multiplayer mushroom collecting game using WebSocket and DOM rendering",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "ws": "^8.16.0"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}

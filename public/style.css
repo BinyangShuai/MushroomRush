@@ -1,0 +1,147 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #2f3e2f;
+  color: white;
+}
+
+/* ===== Join Screen ===== */
+#join {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ===== Top Bar ===== */
+#topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: #1f2a1f;
+}
+
+#title {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+#playerInfo {
+  font-size: 14px;
+  opacity: 0.9;
+  font-weight: bold;
+  color: #ffd700;
+}
+
+#timer {
+  font-size: 16px;
+}
+
+#controls button {
+  margin-left: 5px;
+}
+
+/* ===== Game Area ===== */
+#game {
+  text-align: center;
+}
+
+#field {
+  width: 800px;
+  height: 600px;
+  margin: 10px auto;
+  position: relative;
+  background: url("assets/grass.png") center/cover;
+  border: 3px solid #1f2a1f;
+  overflow: hidden;
+}
+
+/* ✅ 半透明遮罩层 */
+#field::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7); /* 调这个值 */
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ✅ 确保角色在遮罩上层 */
+.player,
+.mushroom {
+  position: absolute;
+  z-index: 2;
+}
+
+/* ===== Players & Mushrooms ===== */
+.player {
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  background-size: cover;
+  border-radius: 50%;
+}
+
+.mushroom {
+  width: 32px;
+  height: 32px;
+  position: absolute;
+  background: url("assets/mushroom.png") center/contain no-repeat;
+}
+
+/* ===== Score Panel ===== */
+#scorePanel {
+  width: 800px;
+  margin: auto;
+  background: #1f2a1f;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+#scores {
+  list-style: none;
+  padding: 0;
+}
+
+/* ===== Messages ===== */
+#message {
+  height: 20px;
+  margin-top: 5px;
+  color: #ffd700;
+}
+
+/* ===== Overlay ===== */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.hidden {
+  display: none;
+}
+
+.panel {
+  background: white;
+  color: black;
+  padding: 25px 40px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+[hidden] {
+  display: none !important;
+}
+.hidden {
+  display: none !important;
+}

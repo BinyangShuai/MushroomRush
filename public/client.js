@@ -1,0 +1,189 @@
+const ws = new WebSocket(
+  location.protocol === "https:"
+    ? `wss://${location.host}`
+    : `ws://${location.host}`
+);
+
+const join = document.getElementById("join");
+const game = document.getElementById("game");
+const joinBtn = document.getElementById("joinBtn");
+const startBtn = document.getElementById("startBtn");
+const pauseBtn = document.getElementById("pauseBtn");
+const resumeBtn = document.getElementById("resumeBtn");
+const nameInput = document.getElementById("name");
+const roomInput = document.getElementById("roomId");
+const field = document.getElementById("field");
+const scores = document.getElementById("scores");
+const timer = document.getElementById("timer");
+const msg = document.getElementById("message");
+const playerInfo = document.getElementById("playerInfo");
+const menu = document.getElementById("menu");
+const winnerBox = document.getElementById("winner");
+const winnerText = document.getElementById("winnerText");
+const playAgainBtn = document.getElementById("playAgainBtn");
+
+let keys = {};
+let paused = false;
+let myId = null;
+
+const avatars = [
+  "assets/player1.png",
+  "assets/player2.png",
+  "assets/player3.png",
+  "assets/player4.png"
+];
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    menu.classList.toggle("hidden");
+    ws.send(JSON.stringify({ type: paused ? "resume" : "pause" }));
+    paused = !paused;
+  }
+  keys[e.key] = true;
+});
+
+document.addEventListener("keyup", e => keys[e.key] = false);
+
+menuResume.onclick = () => {
+  menu.classList.add("hidden");
+  ws.send(JSON.stringify({ type: "resume" }));
+  paused = false;
+};
+
+menuQuit.onclick = () => {
+  ws.send(JSON.stringify({ type: "quit" }));
+  ws.close();
+  location.reload();
+};
+
+joinBtn.onclick = () => {
+  const playerName = nameInput.value.trim();
+  const roomId = roomInput.value.trim()
+  if (!playerName) {
+    alert("Please enter your name");
+    return;
+  }
+  if (!roomId) {
+    alert("Please enter your roomId");
+    return;
+  }
+
+  ws.send(JSON.stringify({
+    type: "join",
+    name: playerName,
+    roomId: roomInput.value.trim()
+  }));
+
+  join.hidden = true;
+  game.hidden = false;
+};
+
+startBtn.onclick = () => ws.send(JSON.stringify({ type: "start" }));
+pauseBtn.onclick = () => ws.send(JSON.stringify({ type: "pause" }));
+resumeBtn.onclick = () => ws.send(JSON.stringify({ type: "resume" }));
+
+playAgainBtn.onclick = () => {
+  ws.send(JSON.stringify({ type: "start" }));
+};
+
+function loop() {
+  if (!paused) {
+    let dx = 0, dy = 0;
+    if (keys.w || keys.ArrowUp) dy -= 3;
+    if (keys.s || keys.ArrowDown) dy += 3;
+    if (keys.a || keys.ArrowLeft) dx -= 3;
+    if (keys.d || keys.ArrowRight) dx += 3;
+    if (dx || dy) ws.send(JSON.stringify({ type: "move", dx, dy }));
+  }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+ws.onmessage = e => {
+  const data = JSON.parse(e.data);
+
+  if (data.type === "host" && data.isHost)
+    startBtn.hidden = false;
+
+  if (data.type === "state") {
+    if (data.gameStarted) {
+      winnerBox.classList.add("hidden");
+      playAgainBtn.hidden = true;
+    }
+    field.innerHTML = "";
+    scores.innerHTML = "";
+    timer.textContent = `Time: ${data.timeLeft}`;
+    if (data.message?.text) msg.textContent = data.message.text;
+
+    const players = Object.values(data.players);
+
+    players.forEach((p, i) => {
+      const d = document.createElement("div");
+      d.className = "player";
+      d.style.transform = `translate(${p.x}px, ${p.y}px)`;
+      d.style.backgroundImage = `url(${avatars[i % avatars.length]})`;
+      field.appendChild(d);
+
+      const li = document.createElement("li");
+      li.textContent = `${p.name}: ${p.score}`;
+      scores.appendChild(li);
+    });
+
+    data.mushrooms.forEach(m => {
+      const d = document.createElement("div");
+      d.className = "mushroom";
+      d.style.transform = `translate(${m.x}px, ${m.y}px)`;
+      field.appendChild(d);
+    });
+    startBtn.hidden = !(data.hostId === myId && !data.gameStarted);
+
+    if (myId && data.players[myId]) {
+      const me = data.players[myId];
+      const isHost = data.hostId === myId;
+
+      playerInfo.textContent = isHost
+        ? `Player: ${me.name} (Host)`
+        : `Player: ${me.name}`;
+    }
+
+  }
+
+  if (data.type === "gameOver") {
+    const winners = data.winners;
+
+    if (!winners || winners.length === 0) {
+      winnerText.textContent = "No winner";
+    } else if (winners.length === 1) {
+      winnerText.textContent =
+        `🏆 Winner: ${winners[0].name} (${winners[0].score} points)`;
+    } else {
+      const names = winners.map(w => w.name).join(" & ");
+      winnerText.textContent =
+        `🤝 Tie between ${names} (${winners[0].score} points)`;
+    }
+    if (myId && data.hostId === myId) {
+      playAgainBtn.hidden = false;
+    } else {
+      playAgainBtn.hidden = true;
+    }
+
+    winnerBox.classList.remove("hidden");
+  }
+
+  if (data.type === "welcome") {
+    myId = data.id;
+  }
+
+  if (data.type === "roomFull") {
+    alert(data.message);
+    ws.close();
+    location.reload();
+  }
+
+  if (data.type === "gameInProgress") {
+    alert(data.message);
+    ws.close();
+    location.reload();
+  }
+
+};
