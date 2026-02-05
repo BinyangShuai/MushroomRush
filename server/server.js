@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 const MAX_PLAYERS = 4;
 
 /* =======================
-   静态文件服务
+  Static file server
 ======================= */
 
 const MIME_TYPES = {
@@ -39,13 +39,13 @@ const server = http.createServer((req, res) => {
 });
 
 /* =======================
-   WebSocket 多房间逻辑
+  WebSocket multi-room logic
 ======================= */
 
 const wss = new WebSocket.Server({ server });
 const rooms = {};
 
-/* -------- 房间工具 -------- */
+/* -------- Room utilities -------- */
 
 function createRoom(roomId) {
   rooms[roomId] = {
@@ -133,7 +133,7 @@ function getExistingRoom(roomId) {
   return rooms[roomId] || null;
 }
 
-/* -------- 定时器（全房间） -------- */
+/* -------- Timers (all rooms) -------- */
 
 setInterval(() => {
   Object.keys(rooms).forEach(roomId => {
@@ -168,7 +168,7 @@ setInterval(() => {
 }, 1000);
 
 /* =======================
-   WebSocket 事件
+  WebSocket events
 ======================= */
 
 wss.on("connection", ws => {
@@ -183,7 +183,7 @@ wss.on("connection", ws => {
       const roomId = data.roomId;
       let room = getExistingRoom(roomId);
 
-      // ✅ 如果房间存在且游戏正在进行，禁止加入
+      // ✅ If the room exists and a game is in progress, disallow joining
       if (room && room.gameStarted) {
         ws.send(JSON.stringify({
           type: "gameInProgress",
@@ -192,7 +192,7 @@ wss.on("connection", ws => {
         return;
       }
 
-      // ✅ 如果房间不存在，现在才创建
+      // ✅ If the room doesn't exist, create it now
       if (!room) {
         room = createRoom(roomId);
       }

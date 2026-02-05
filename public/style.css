@@ -62,17 +62,17 @@ body {
   overflow: hidden;
 }
 
-/* ✅ 半透明遮罩层 */
+/* ✅ Semi-transparent overlay */
 #field::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7); /* 调这个值 */
+  background: rgba(0, 0, 0, 0.7); /* Adjust this value */
   pointer-events: none;
   z-index: 1;
 }
 
-/* ✅ 确保角色在遮罩上层 */
+/* ✅ Ensure players are above the overlay */
 .player,
 .mushroom {
   position: absolute;

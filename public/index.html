@@ -16,7 +16,7 @@
 
 <div id="game" hidden>
 
-  <!-- ✅ 顶部控制栏 -->
+  <!-- ✅ Top control bar -->
   <div id="topBar">
     <div id="title">🍄 Mushroom Rush</div>
     <div id="playerInfo"></div>
@@ -28,13 +28,13 @@
     </div>
   </div>
 
-  <!-- 系统消息 -->
+  <!-- System messages -->
   <div id="message"></div>
 
-  <!-- 游戏场地 -->
+  <!-- Game field -->
   <div id="field"></div>
 
-  <!-- 分数面板 -->
+  <!-- Score panel -->
   <div id="scorePanel">
     <h3>Scores</h3>
     <ul id="scores"></ul>
@@ -42,7 +42,7 @@
 
 </div>
 
-<!-- ESC 菜单 -->
+<!-- ESC Menu -->
 <div id="menu" class="overlay hidden">
   <div class="panel">
     <h2>Game Menu</h2>
@@ -51,15 +51,15 @@
   </div>
 </div>
 
-<!-- Winner 弹窗 -->
+<!-- Winner popup -->
 <div id="winner" class="overlay hidden">
   <div class="panel">
     <h2 id="winnerText"></h2>
 
-    <!-- ✅ 只给 Host 的按钮 -->
+    <!-- ✅ Buttons only for host -->
     <button id="playAgainBtn" hidden>Start Next Round</button>
 
-    <!-- 可选：返回大厅 -->
+    <!-- Optional: Back to lobby -->
     <button onclick="location.reload()">Back to Lobby</button>
   </div>
 </div>
