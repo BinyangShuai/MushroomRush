@@ -58,7 +58,7 @@ menuQuit.onclick = () => {
 
 joinBtn.onclick = () => {
   const playerName = nameInput.value.trim();
-  const roomId = roomInput.value.trim()
+  const roomId = roomInput.value.trim();
   if (!playerName) {
     alert("Please enter your name");
     return;
@@ -68,14 +68,15 @@ joinBtn.onclick = () => {
     return;
   }
 
+  // Send trimmed values and wait for server confirmation (welcome)
+  joinBtn.disabled = true;
+  msg.textContent = "Joining...";
+
   ws.send(JSON.stringify({
     type: "join",
     name: playerName,
-    roomId: roomInput.value.trim()
+    roomId: roomId
   }));
-
-  join.hidden = true;
-  game.hidden = false;
 };
 
 startBtn.onclick = () => ws.send(JSON.stringify({ type: "start" }));
@@ -172,6 +173,11 @@ ws.onmessage = e => {
 
   if (data.type === "welcome") {
     myId = data.id;
+    // Server accepted the join — show game UI
+    join.hidden = true;
+    game.hidden = false;
+    joinBtn.disabled = false;
+    msg.textContent = "";
   }
 
   if (data.type === "roomFull") {
@@ -184,6 +190,14 @@ ws.onmessage = e => {
     alert(data.message);
     ws.close();
     location.reload();
+  }
+
+  // Name validation errors from server
+  if (data.type === "nameTaken" || data.type === "invalidName") {
+    alert(data.message || (data.type === "nameTaken" ? "Name already taken" : "Invalid name"));
+    joinBtn.disabled = false;
+    msg.textContent = "";
+    nameInput.focus();
   }
 
 };

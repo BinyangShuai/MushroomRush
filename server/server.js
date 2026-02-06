@@ -205,6 +205,26 @@ wss.on("connection", ws => {
         return;
       }
       
+      // Validate name and ensure no duplicate names in the room (case-insensitive)
+      const name = (data.name || "").trim();
+      if (!name) {
+        ws.send(JSON.stringify({ type: "invalidName", message: "Name cannot be empty." }));
+        return;
+      }
+
+      const nameLower = name.toLowerCase();
+      // Check across all rooms so names are unique globally (case-insensitive)
+      const nameTaken = Object.values(rooms).some(r =>
+        Object.values(r.players).some(p => p.name && p.name.toLowerCase() === nameLower)
+      );
+      if (nameTaken) {
+        ws.send(JSON.stringify({
+          type: "nameTaken",
+          message: "Name already taken. Choose another name."
+        }));
+        return;
+      }
+
       ws.roomId = roomId;
 
       if (!room.hostId) {
@@ -217,7 +237,7 @@ wss.on("connection", ws => {
 
       room.players[id] = {
         id,
-        name: data.name,
+        name,
         x: Math.random() * 700,
         y: Math.random() * 500,
         score: 0
@@ -229,7 +249,7 @@ wss.on("connection", ws => {
       }));
 
       broadcastRoomState(roomId, {
-        text: `${data.name} joined room ${roomId}`
+        text: `${name} joined room ${roomId}`
       });
     }
 
