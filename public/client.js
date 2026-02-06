@@ -21,10 +21,16 @@ const menu = document.getElementById("menu");
 const winnerBox = document.getElementById("winner");
 const winnerText = document.getElementById("winnerText");
 const playAgainBtn = document.getElementById("playAgainBtn");
+const fpsDisplay = document.getElementById("fps");
 
 let keys = {};
 let paused = false;
 let myId = null;
+
+// FPS counter
+let frameCount = 0;
+let lastTime = performance.now();
+let fps = 0;
 
 const avatars = [
   "assets/player1.png",
@@ -88,6 +94,18 @@ playAgainBtn.onclick = () => {
 };
 
 function loop() {
+  // Calculate FPS
+  frameCount++;
+  const currentTime = performance.now();
+  const elapsed = currentTime - lastTime;
+  
+  if (elapsed >= 1000) {
+    fps = Math.round(frameCount * 1000 / elapsed);
+    fpsDisplay.textContent = `FPS: ${fps}`;
+    frameCount = 0;
+    lastTime = currentTime;
+  }
+
   if (!paused) {
     let dx = 0, dy = 0;
     if (keys.w || keys.ArrowUp) dy -= 3;
