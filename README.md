@@ -110,6 +110,11 @@ Recommended platforms:
 - Fly.io
 When deployed, all players can join the same game room using the public URL.
 
+## Render URL (running now)
+```
+https://mushroomrush.onrender.com/
+```
+
 ## 🌍 Playing Over the Internet
 For quick public access and multiplayer testing, the game server can be exposed to the internet using **Cloudflare Tunnel**.
 
