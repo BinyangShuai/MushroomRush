@@ -26,6 +26,7 @@ const fpsDisplay = document.getElementById("fps");
 let keys = {};
 let paused = false;
 let myId = null;
+let currentPlayerCount = 0;
 
 // FPS counter
 let frameCount = 0;
@@ -85,7 +86,13 @@ joinBtn.onclick = () => {
   }));
 };
 
-startBtn.onclick = () => ws.send(JSON.stringify({ type: "start" }));
+startBtn.onclick = () => {
+  if (currentPlayerCount < 2 || currentPlayerCount > 4) {
+    alert(`Need 2-4 players to start. Current: ${currentPlayerCount}`);
+    return;
+  }
+  ws.send(JSON.stringify({ type: "start" }));
+};
 pauseBtn.onclick = () => ws.send(JSON.stringify({ type: "pause" }));
 resumeBtn.onclick = () => ws.send(JSON.stringify({ type: "resume" }));
 
@@ -135,6 +142,7 @@ ws.onmessage = e => {
     if (data.message?.text) msg.textContent = data.message.text;
 
     const players = Object.values(data.players);
+    currentPlayerCount = players.length;
 
     players.forEach((p, i) => {
       const d = document.createElement("div");
@@ -216,6 +224,11 @@ ws.onmessage = e => {
     joinBtn.disabled = false;
     msg.textContent = "";
     nameInput.focus();
+  }
+
+  // Start game errors
+  if (data.type === "startError") {
+    alert(data.message);
   }
 
 };

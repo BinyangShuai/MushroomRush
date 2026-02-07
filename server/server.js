@@ -258,6 +258,16 @@ wss.on("connection", ws => {
       const room = rooms[ws.roomId];
       if (!room || room.hostId !== id) return;
 
+      // Check if room has 2-4 players
+      const playerCount = Object.keys(room.players).length;
+      if (playerCount < 2 || playerCount > 4) {
+        ws.send(JSON.stringify({
+          type: "startError",
+          message: `Need 2-4 players to start. Current: ${playerCount}`
+        }));
+        return;
+      }
+
       room.gameStarted = true;
       room.paused = false;
       room.timeLeft = 60;
