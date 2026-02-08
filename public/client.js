@@ -27,6 +27,7 @@ let keys = {};
 let paused = false;
 let myId = null;
 let currentPlayerCount = 0;
+let localPlayer = { x: 0, y: 0 }; // Track local player position
 
 // FPS counter
 let frameCount = 0;
@@ -119,7 +120,13 @@ function loop() {
     if (keys.s || keys.ArrowDown) dy += 3;
     if (keys.a || keys.ArrowLeft) dx -= 3;
     if (keys.d || keys.ArrowRight) dx += 3;
-    if (dx || dy) ws.send(JSON.stringify({ type: "move", dx, dy }));
+
+    if (dx || dy) {
+      // Update local position immediately
+      localPlayer.x += dx;
+      localPlayer.y += dy;
+      ws.send(JSON.stringify({ type: "move", dx, dy }));
+    }
   }
   requestAnimationFrame(loop);
 }
@@ -141,13 +148,18 @@ ws.onmessage = e => {
     timer.textContent = `Time: ${data.timeLeft}`;
     if (data.message?.text) msg.textContent = data.message.text;
 
-    const players = Object.values(data.players);
+    const players = Object.entries(data.players);
     currentPlayerCount = players.length;
 
-    players.forEach((p, i) => {
+    players.forEach(([id, p], i) => {
       const d = document.createElement("div");
       d.className = "player";
-      d.style.transform = `translate(${p.x}px, ${p.y}px)`;
+      
+      // Use local position for local player, server position for others
+      const x = (id === myId) ? localPlayer.x : p.x;
+      const y = (id === myId) ? localPlayer.y : p.y;
+      
+      d.style.transform = `translate(${x}px, ${y}px)`;
       d.style.backgroundImage = `url(${avatars[i % avatars.length]})`;
       field.appendChild(d);
 
@@ -155,6 +167,15 @@ ws.onmessage = e => {
       li.textContent = `${p.name}: ${p.score}`;
       scores.appendChild(li);
     });
+    
+    // Sync local position with server to prevent drift
+    if (myId && data.players[myId]) {
+      const serverPos = data.players[myId];
+      if (Math.abs(localPlayer.x - serverPos.x) > 10 || Math.abs(localPlayer.y - serverPos.y) > 10) {
+        localPlayer.x = serverPos.x;
+        localPlayer.y = serverPos.y;
+      }
+    }
 
     data.mushrooms.forEach(m => {
       const d = document.createElement("div");
@@ -204,6 +225,8 @@ ws.onmessage = e => {
     game.hidden = false;
     joinBtn.disabled = false;
     msg.textContent = "";
+    // Initialize local player position
+    localPlayer = { x: 0, y: 0 };
   }
 
   if (data.type === "roomFull") {
